@@ -66,7 +66,7 @@ jobs:
           envsubst '${VERSION}','${env.OSSRHUSERNAME}','${env.OSSRHPASSWORD}' < build.gradle > build.gradle.new
           mv build.gradle.new build.gradle
           mkdir .gradle
-          echo "${secrets.GPG_KEY_PRIVATE}" > private.key
+          echo "${{ secrets.GPG_KEY_PRIVATE }}" > private.key
           gpg --import private.key
           gpg --export-secret-keys -o secring.gpg
           echo "$GRADLE_PROPERTIES" > $GRADLE_USER_HOME/gradle.properties
