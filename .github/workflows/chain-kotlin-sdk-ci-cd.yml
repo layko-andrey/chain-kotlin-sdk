@@ -45,35 +45,31 @@ jobs:
     continue-on-error: false
     needs: [build]
 
+    env:
+      OSSRHUSERNAME: ${secrets.OSSRH_LOGIN}
+        OSSRHPASSWORD: ${secrets.OSSRH_PASS}
+
     steps:
+
+      - name: Prepare system
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
 
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Deploy server
+      - name: Deploy SDK
         run: |
-          sudo apt install openssh-client
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          eval $(ssh-agent -s)
-          echo "${{ secrets.SPRINT_DEPLOY_SSH_KEY }}" | tr -d '\r' | ssh-add - > /dev/null
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan ${{ secrets.SPRINT_SERVER }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-          export DOCKER_HOST="ssh://gitlab@${{ secrets.SPRINT_SERVER }}"
-          export MONGODB_PASSWORD="${{ secrets.SPRINT_MONGO_PASSWORD }}"
-          export BITCOIN_NODE_ADDRESS="${{ secrets.SPRINT_BITCOIN_NODE }}"
-          export BITCOIN_USERNAME="${{ secrets.SPRINT_BITCOIN_USERNAME }}"
-          export BITCOIN_PASSWORD="${{ secrets.SPRINT_BITCOIN_PASSWORD }}"
-          export ETHEREUM_NODE_ADDRESS="${{ secrets.SPRINT_ETHEREUM_NODE_ADDRESS }}"
-          export DOCKER_IMAGE_TAG="openplatform/open-state:${{ env.IMAGE_TAG }}"
-          docker login -u ${{ secrets.DOCKERHUB_USER_NAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-          docker-compose -f docker-compose.yml up -d
-          ssh -i /dev/null gitlab@${{ secrets.SPRINT_SERVER }} "
-                                    docker stop open-state && \
-                                    IMG=\$(docker ps -a --filter='name=^/open-state$' --format='{{.Image}}') &&  \
-                                    docker rm -f open-state && \
-                                    docker rmi \$IMG; \
-                                    exit 0
-                                  "
-          docker-compose -f docker-compose.yml up -d
+          VERSION=$(echo ${CI_COMMIT_REF_NAME} | sed "s/v//")
+          export VERSION=$VERSION
+          envsubst '${VERSION}','${env.OSSRHUSERNAME}','${env.OSSRHPASSWORD}' < build.gradle > build.gradle.new
+          mv build.gradle.new build.gradle
+          mkdir .gradle
+          echo "$GPG_KEY_PRIVATE" > private.key
+          gpg --import private.key
+          gpg --export-secret-keys -o secring.gpg
+          echo "$GRADLE_PROPERTIES" > $GRADLE_USER_HOME/gradle.properties
+          ./gradlew -Psign uploadArchives
+          ./gradlew closeAndReleaseRepository
+
