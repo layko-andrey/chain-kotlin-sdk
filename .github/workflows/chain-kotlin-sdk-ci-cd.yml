@@ -47,7 +47,7 @@ jobs:
 
     env:
       OSSRHUSERNAME: ${secrets.OSSRH_LOGIN}
-        OSSRHPASSWORD: ${secrets.OSSRH_PASS}
+      OSSRHPASSWORD: ${secrets.OSSRH_PASS}
 
     steps:
 
