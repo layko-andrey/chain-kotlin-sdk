@@ -61,7 +61,7 @@ jobs:
 
       - name: Deploy SDK
         run: |
-          VERSION=$(echo ${CI_COMMIT_REF_NAME} | sed "s/v//")
+          VERSION='fghjk'
           export VERSION=$VERSION
           envsubst '${VERSION}','${env.OSSRHUSERNAME}','${env.OSSRHPASSWORD}' < build.gradle > build.gradle.new
           mv build.gradle.new build.gradle
