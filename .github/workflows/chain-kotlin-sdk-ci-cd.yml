@@ -69,8 +69,6 @@ jobs:
           echo "${{ secrets.GPG_KEY_PRIVATE }}" > private.key
           gpg --import private.key
           gpg --export-secret-keys -o secring.gpg
-          chmod 700 ~/$GRADLE_USER_HOME
           echo "${{ secrets.GRADLE_PROPERTIES }}" > $GRADLE_USER_HOME/gradle.properties
-          ./gradlew -Psign uploadArchives
-          ./gradlew closeAndReleaseRepository
+
 
