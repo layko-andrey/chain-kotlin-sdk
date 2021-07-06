@@ -38,6 +38,12 @@ jobs:
           mv build.gradle.new build.gradle
           ./gradlew assemble
 
+      - name: Save executables
+        uses: actions/upload-artifact@v2
+        with:
+          name: assembles_${{ github.sha }}
+          path: build/libs/*.jar
+
 
   deploy:
     name: Deploy SDK
@@ -59,6 +65,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: assembles_${{ github.sha }}
+          path: build/libs
+
       - name: Deploy SDK
         run: |
           VERSION='fghjk'
@@ -69,6 +81,7 @@ jobs:
           echo "${{ secrets.GPG_KEY_PRIVATE }}" > private.key
           gpg --import private.key
           gpg --export-secret-keys -o secring.gpg
-          echo "${{ secrets.GRADLE_PROPERTIES }}" > $GRADLE_USER_HOME/gradle.properties
-
+          sudo echo "${{ secrets.GRADLE_PROPERTIES }}" > $GRADLE_USER_HOME/gradle.properties
+          ./gradlew -Psign uploadArchives
+          ./gradlew closeAndReleaseRepository
 
