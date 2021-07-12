@@ -84,6 +84,7 @@ jobs:
           echo "${{ secrets.GRADLE_PROPERTIES }}" | sudo tee .gradle/gradle.properties
           cd .gradle
           dir
+          cat gradle.properties
           ./gradlew -Psign uploadArchives
           ./gradlew closeAndReleaseRepository
 
