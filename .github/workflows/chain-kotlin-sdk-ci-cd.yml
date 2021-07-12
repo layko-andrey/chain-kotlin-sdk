@@ -81,10 +81,7 @@ jobs:
           echo "${{ secrets.GPG_KEY_PRIVATE }}" > private.key
           gpg --import private.key
           gpg --export-secret-keys -o secring.gpg
-          echo "${{ secrets.GRADLE_PROPERTIES }}" | sudo tee .gradle/gradle.properties
-          cd .gradle
-          less gradle.properties
-          dir
+          echo "${{ secrets.GRADLE_PROPERTIES }}" | sudo tee gradle.properties
           ./gradlew -Psign uploadArchives
           ./gradlew closeAndReleaseRepository
 
