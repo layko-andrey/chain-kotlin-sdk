@@ -73,7 +73,7 @@ jobs:
 
       - name: Deploy SDK
         run: |
-          VERSION='fghjk'
+          VERSION=$(echo ${{ github.ref }} | sed "s/v//")
           export VERSION=$VERSION
           envsubst '${VERSION}','${env.OSSRHUSERNAME}','${env.OSSRHPASSWORD}' < build.gradle > build.gradle.new
           mv build.gradle.new build.gradle
